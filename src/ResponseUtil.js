@@ -7,7 +7,7 @@ const json = (data) => new Response(JSON.stringify(data), {
 });
 const jsonSuccess = (data) => json(JsonResponse.success(data));
 
-const jsonError = (data) => json(JsonResponse.error(data));
+const jsonError = (code, msg) => json(JsonResponse.error(code, msg));
 
 const JsonResponse = {
     success(data){
