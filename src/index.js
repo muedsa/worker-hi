@@ -1,10 +1,14 @@
 import { Router } from 'itty-router'
 import Res from "./ResponseUtil";
+import {handleMetaInfo, handleAssertInfo} from "./GithubPageUtil";
 // Create a new router
 const router = Router();
 
 // errorHandler
-const errorHandler = error => Res.jsonError(error.status || 500, error.message || 'Server Error');
+const errorHandler = error => {
+	console.log(error);
+	return Res.jsonError(error.status || 500, error.message || 'Server Error');
+};
 
 // github repository api
 const GITHUB_REPOSITORY_RELEASE_LATEST_URL = "https://github.com/${user}/${repo}/releases/latest";
@@ -17,15 +21,10 @@ router.get("/github/:user/:repo/releases/latest", async ({ params }) => {
 	const url = GITHUB_REPOSITORY_RELEASE_LATEST_URL
 		.replace("${user}", params.user)
 		.replace("${repo}", params.repo);
-	const response = await fetch(url, {
-		method: 'GET',
-		headers: HEADER,
-	});
-	if(response.status !== 200){
-		throw new Error(`fetch ${url}, ${response.status} ${response.statusText}`);
-	}
-	const html = await response.text();
-	return handleTagInfo(html);
+	const html = await (await doFetch(url)).text();
+	const mateInfo = handleMetaInfo(html);
+	mateInfo.asserts = handleAssertInfo(html);
+	return Res.jsonSuccess(mateInfo);
 });
 
 router.get("/github/:user/:repo/releases/tag/:tag", async ({ params }) => {
@@ -33,6 +32,14 @@ router.get("/github/:user/:repo/releases/tag/:tag", async ({ params }) => {
 		.replace("${user}", params.user)
 		.replace("${repo}", params.repo)
 		.replace("${tag}", params.tag);
+
+	const html = await (await doFetch(url)).text();
+	const mateInfo = handleMetaInfo(html);
+	mateInfo.asserts = handleAssertInfo(html);
+	return Res.jsonSuccess(mateInfo);
+});
+
+async function doFetch(url) {
 	const response = await fetch(url, {
 		method: 'GET',
 		headers: HEADER,
@@ -40,25 +47,7 @@ router.get("/github/:user/:repo/releases/tag/:tag", async ({ params }) => {
 	if(response.status !== 200){
 		throw new Error(`fetch ${url}, ${response.status} ${response.statusText}`);
 	}
-	const html = await response.text();
-	return handleTagInfo(html);
-});
-
-function handleTagInfo(html){
-	const iterator = html.matchAll(/<meta property="og:(.*?)"\s*content="((?:.|\n)*?)"\s*\/>/g);
-	let data = {};
-	for (let item of iterator) {
-		data[item[1]] = item[2];
-		if(item[1] === 'url') {
-			let paths = item[2].split('/');
-			if(paths[paths.length - 2] === 'tag'){
-				data.tag = paths[paths.length - 1];
-			}
-		}else if(item[1] === 'image:width' || item[1] === 'image:height'){
-			data[item[1]] = Number.parseInt(item[2]);
-		}
-	}
-	return Res.jsonSuccess(data);
+	return response;
 }
 
 // 404 for everything else
