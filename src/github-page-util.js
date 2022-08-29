@@ -1,4 +1,4 @@
-import RegexHtmlElement from './RegexHtmlElement';
+import RegexHtmlElement from './regex-html-element';
 
 const GITHUB_HOST_URL = "https://github.com";
 

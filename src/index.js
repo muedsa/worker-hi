@@ -1,6 +1,6 @@
 import { Router } from 'itty-router'
-import Res from "./ResponseUtil";
-import {handleMetaInfo, handleAssetsInfo} from "./GithubPageUtil";
+import Res from "./response-util";
+import {handleMetaInfo, handleAssetsInfo} from "./github-page-util";
 // Create a new router
 const router = Router();
 
