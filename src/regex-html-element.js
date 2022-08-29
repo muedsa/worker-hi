@@ -4,6 +4,11 @@ export class RegexHtmlElement {
     static LINE_MATCH_REGEX = '.*?';
     static ALL_MATCH_REGEX = '[\\s\\S]*?';
 
+    static BEGIN_TAG_LEFT = '<';
+    static END_TAG_LEFT = '</';
+    static TAG_RIGHT = '>'
+    static SELF_CLOSE_TAG_RIGHT = '/>'
+
     constructor(name, isSelfClose) {
         this.name = name;
         this.isSelfClose = !!isSelfClose;
@@ -37,7 +42,8 @@ export class RegexHtmlElement {
 
     toRegex(flag){
         let startTagLeft = '<' + this.name + (this.attrs.length > 0 ? RegexHtmlElement.LINE_MATCH_REGEX : '');
-        let startTagRight = this.isSelfClose ? RegexHtmlElement.LINE_MATCH_REGEX + '/>' : RegexHtmlElement.LINE_MATCH_REGEX + '>';
+        let startTagRight = this.isSelfClose ? RegexHtmlElement.LINE_MATCH_REGEX + RegexHtmlElement.SELF_CLOSE_TAG_RIGHT
+            : RegexHtmlElement.LINE_MATCH_REGEX + RegexHtmlElement.TAG_RIGHT;
         let startTagAttrs = this.attrs.map(attr => attr.key + '="' + attr.value + '"')
             .join(RegexHtmlElement.LINE_MATCH_REGEX);
         let reg = startTagLeft + startTagAttrs + startTagRight;
@@ -54,8 +60,7 @@ export class RegexHtmlElement {
             }else{
                 reg += RegexHtmlElement.ALL_MATCH_REGEX;
             }
-
-            reg += '</' + this.name + '>';
+            reg += RegexHtmlElement.END_TAG_LEFT + this.name + RegexHtmlElement.TAG_RIGHT;
         }
         return new RegExp(reg, flag);
     }
