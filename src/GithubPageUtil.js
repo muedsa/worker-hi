@@ -1,6 +1,6 @@
 import RegexHtmlElement from './RegexHtmlElement';
 
-const GITHUB_HOST_URL = "https://github.com/";
+const GITHUB_HOST_URL = "https://github.com";
 
 export const handleMetaInfo = (html) => {
     const metaTag = new RegexHtmlElement('meta', true);
