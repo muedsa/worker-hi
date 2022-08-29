@@ -41,7 +41,8 @@ export class RegexHtmlElement {
     }
 
     toRegex(flag){
-        let startTagLeft = '<' + this.name + (this.attrs.length > 0 ? RegexHtmlElement.LINE_MATCH_REGEX : '');
+        let startTagLeft = RegexHtmlElement.BEGIN_TAG_LEFT + this.name
+            + (this.attrs.length > 0 ? RegexHtmlElement.LINE_MATCH_REGEX : '');
         let startTagRight = this.isSelfClose ? RegexHtmlElement.LINE_MATCH_REGEX + RegexHtmlElement.SELF_CLOSE_TAG_RIGHT
             : RegexHtmlElement.LINE_MATCH_REGEX + RegexHtmlElement.TAG_RIGHT;
         let startTagAttrs = this.attrs.map(attr => attr.key + '="' + attr.value + '"')
