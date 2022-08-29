@@ -69,5 +69,5 @@ export const handleAssetsInfo = (html) => {
 
 export default {
     handleMetaInfo,
-    handleAssertInfo: handleAssetsInfo
+    handleAssetsInfo
 }
