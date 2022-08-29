@@ -1,5 +1,7 @@
 import RegexHtmlElement from './RegexHtmlElement';
 
+const GITHUB_HOST_URL = "https://github.com/";
+
 export const handleMetaInfo = (html) => {
     const metaTag = new RegexHtmlElement('meta', true);
     metaTag.addAttr('property', 'og:(?<name>.*?)');
@@ -17,6 +19,7 @@ export const handleMetaInfo = (html) => {
                 if(paths[paths.length - 2] === 'tag'){
                     data.tag = paths[paths.length - 1];
                 }
+                data[name] = GITHUB_HOST_URL + data[name];
             }else if(name === 'image:width' || name === 'image:height'){
                 data[name] = Number.parseInt(value);
             }
@@ -25,7 +28,7 @@ export const handleMetaInfo = (html) => {
     return data;
 }
 
-export const handleAssertInfo = (html) => {
+export const handleAssetsInfo = (html) => {
     const ulTag = new RegexHtmlElement('ul', false);
     ulTag.setContext('(?<ulContent>[\\s\\S]*?)');
     const ulDivTag = new RegexHtmlElement('div', false);
@@ -45,17 +48,20 @@ export const handleAssertInfo = (html) => {
     detailsBoxTag.addChildElement(detailsTag);
     const ulContentHtml = html.match(detailsBoxTag.toRegex()).groups.ulContent;
     const spanTag = new RegexHtmlElement('span', false);
-    spanTag.setContext('(?<fileName>[\\s\\S]*?)');
+    spanTag.setContext('(?<name>[\\s\\S]*?)');
     const aTag = new RegexHtmlElement('a', false);
-    aTag.addAttr('href', '(?<fileUrl>.*?)');
+    aTag.addAttr('href', '(?<url>.*?)');
     aTag.addChildElement(spanTag);
     const liTag = new RegexHtmlElement('li', false);
     liTag.addChildElement(aTag);
     let matchGroups = ulContentHtml.matchAll(liTag.toRegex('g'));
     let assertList = [];
     for (let matchGroup of matchGroups) {
-        if(matchGroup.groups){
-            assertList.push(matchGroup.groups)
+        if(matchGroup.groups && matchGroup.groups.name && matchGroup.groups.url){
+            assertList.push({
+                name: matchGroup.groups.name,
+                url: GITHUB_HOST_URL + matchGroup.groups.url
+            })
         }
     }
     return assertList;
@@ -63,5 +69,5 @@ export const handleAssertInfo = (html) => {
 
 export default {
     handleMetaInfo,
-    handleAssertInfo
+    handleAssertInfo: handleAssetsInfo
 }

@@ -1,6 +1,6 @@
 import { Router } from 'itty-router'
 import Res from "./ResponseUtil";
-import {handleMetaInfo, handleAssertInfo} from "./GithubPageUtil";
+import {handleMetaInfo, handleAssetsInfo} from "./GithubPageUtil";
 // Create a new router
 const router = Router();
 
@@ -23,7 +23,7 @@ router.get("/github/:user/:repo/releases/latest", async ({ params }) => {
 		.replace("${repo}", params.repo);
 	const html = await (await doFetch(url)).text();
 	const mateInfo = handleMetaInfo(html);
-	mateInfo.asserts = handleAssertInfo(html);
+	mateInfo.assets = handleAssetsInfo(html);
 	return Res.jsonSuccess(mateInfo);
 });
 
@@ -35,7 +35,7 @@ router.get("/github/:user/:repo/releases/tag/:tag", async ({ params }) => {
 
 	const html = await (await doFetch(url)).text();
 	const mateInfo = handleMetaInfo(html);
-	mateInfo.asserts = handleAssertInfo(html);
+	mateInfo.assets = handleAssetsInfo(html);
 	return Res.jsonSuccess(mateInfo);
 });
 
