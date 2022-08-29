@@ -1,6 +1,6 @@
 import { Router } from 'itty-router'
 import Res from "./response-util";
-import {handleMetaInfo, handleAssetsInfo} from "./github-page-util";
+import {handleMetaInfo, handleAssetsInfo, handleDownloadUrl} from "./github-page-util";
 // Create a new router
 const router = Router();
 
@@ -38,6 +38,29 @@ router.get("/github/:user/:repo/releases/tag/:tag", async ({ params }) => {
 	mateInfo.assets = handleAssetsInfo(html);
 	return Res.jsonSuccess(mateInfo);
 });
+
+const APPS_REPO = {
+	'bilibililivetv': GITHUB_REPOSITORY_RELEASE_LATEST_URL
+		.replace("${user}", 'MUedsa')
+		.replace("${repo}", 'BilibiliLiveTV')
+}
+
+router.get("/app/:name/download", async ({ params }) => {
+	let downloadUrl = null;
+	const githubTagPageUrl = APPS_REPO[params.name.toLowerCase()];
+	if(githubTagPageUrl){
+		const html = await (await doFetch(githubTagPageUrl)).text();
+		downloadUrl = handleDownloadUrl(html, 'app-release.apk');
+	}
+	let response;
+	if(downloadUrl){
+		response = Res.redirect(downloadUrl);
+	}else{
+		response = Res.BASE_404();
+	}
+	return response;
+});
+
 
 async function doFetch(url) {
 	const response = await fetch(url, {

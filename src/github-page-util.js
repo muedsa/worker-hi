@@ -55,19 +55,26 @@ export const handleAssetsInfo = (html) => {
     const liTag = new RegexHtmlElement('li', false);
     liTag.addChildElement(aTag);
     let matchGroups = ulContentHtml.matchAll(liTag.toRegex('g'));
-    let assertList = [];
+    let assetList = [];
     for (let matchGroup of matchGroups) {
         if(matchGroup.groups && matchGroup.groups.name && matchGroup.groups.url){
-            assertList.push({
+            assetList.push({
                 name: matchGroup.groups.name,
                 url: GITHUB_HOST_URL + matchGroup.groups.url
             })
         }
     }
-    return assertList;
+    return assetList;
 }
 
-export default {
-    handleMetaInfo,
-    handleAssetsInfo
+export const handleDownloadUrl = (html, fileName) => {
+    const assetList = handleAssetsInfo(html);
+    let url = null;
+    if(Array.isArray(assetList)){
+        const find = assetList.find(asset => asset.name === fileName);
+        if(find){
+            url = find.url;
+        }
+    }
+    return url;
 }
