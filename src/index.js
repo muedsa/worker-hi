@@ -63,10 +63,12 @@ router.get("/app/:name/download", async ({ params }) => {
 
 
 async function doFetch(url) {
+	console.log('fetch url:', url);
 	const response = await fetch(url, {
 		method: 'GET',
 		headers: HEADER,
 	});
+	console.log('response:', response);
 	if(response.status !== 200){
 		throw new Error(`fetch ${url}, ${response.status} ${response.statusText}`);
 	}
