@@ -29,6 +29,7 @@ export const handleMetaInfo = (html) => {
 }
 
 export const handleAssetsInfo = (html) => {
+    let assetList = [];
     const ulTag = new RegexHtmlElement('ul', false);
     ulTag.setContext('(?<ulContent>[\\s\\S]*?)');
     const ulDivTag = new RegexHtmlElement('div', false);
@@ -46,22 +47,24 @@ export const handleAssetsInfo = (html) => {
     const detailsBoxTag = new RegexHtmlElement('div', false);
     detailsBoxTag.addAttr('class', 'Box-footer');
     detailsBoxTag.addChildElement(detailsTag);
-    const ulContentHtml = html.match(detailsBoxTag.toRegex()).groups.ulContent;
-    const spanTag = new RegexHtmlElement('span', false);
-    spanTag.setContext('(?<name>[\\s\\S]*?)');
-    const aTag = new RegexHtmlElement('a', false);
-    aTag.addAttr('href', '(?<url>.*?)');
-    aTag.addChildElement(spanTag);
-    const liTag = new RegexHtmlElement('li', false);
-    liTag.addChildElement(aTag);
-    let matchGroups = ulContentHtml.matchAll(liTag.toRegex('g'));
-    let assetList = [];
-    for (let matchGroup of matchGroups) {
-        if(matchGroup.groups && matchGroup.groups.name && matchGroup.groups.url){
-            assetList.push({
-                name: matchGroup.groups.name,
-                url: GITHUB_HOST_URL + matchGroup.groups.url
-            })
+    const ulContentMatch = html.match(detailsBoxTag.toRegex());
+    if(ulContentMatch && ulContentMatch.groups && ulContentMatch.groups.ulContent){
+        const ulContentHtml = ulContentMatch.groups.ulContent;
+        const spanTag = new RegexHtmlElement('span', false);
+        spanTag.setContext('(?<name>[\\s\\S]*?)');
+        const aTag = new RegexHtmlElement('a', false);
+        aTag.addAttr('href', '(?<url>.*?)');
+        aTag.addChildElement(spanTag);
+        const liTag = new RegexHtmlElement('li', false);
+        liTag.addChildElement(aTag);
+        let matchGroups = ulContentHtml.matchAll(liTag.toRegex('g'));
+        for (let matchGroup of matchGroups) {
+            if(matchGroup.groups && matchGroup.groups.name && matchGroup.groups.url){
+                assetList.push({
+                    name: matchGroup.groups.name,
+                    url: GITHUB_HOST_URL + matchGroup.groups.url
+                })
+            }
         }
     }
     return assetList;

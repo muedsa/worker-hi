@@ -6,3 +6,6 @@ compatibility_date = "2022-08-08"
 routes = [
 	{ pattern = "work.muedsa.com", custom_domain = true }
 ]
+
+[vars]
+DEBUG_SECRET = "233"

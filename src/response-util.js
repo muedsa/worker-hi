@@ -5,9 +5,9 @@ const json = (data) => new Response(JSON.stringify(data), {
         'Content-Type': 'application/json; charset=utf-8'
     }
 });
-const jsonSuccess = (data) => json({ code: 0, msg: 'success', data: data });
+const jsonSuccess = (data, others) => json({ code: 0, msg: 'success', data: data, ...others});
 
-const jsonError = (code, msg) => json({ code: code, msg: msg });
+const jsonError = (code, msg, others) => json({ code: code, msg: msg , ...others});
 
 const text = (data) => new Response(data, {
     headers: {
