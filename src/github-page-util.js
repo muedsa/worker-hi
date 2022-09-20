@@ -30,41 +30,20 @@ export const handleMetaInfo = (html) => {
 
 export const handleAssetsInfo = (html) => {
     let assetList = [];
-    const ulTag = new RegexHtmlElement('ul', false);
-    ulTag.setContext('(?<ulContent>[\\s\\S]*?)');
-    const ulDivTag = new RegexHtmlElement('div', false);
-    ulDivTag.addAttr('class', '.*?Box.*?');
-    ulDivTag.addChildElement(ulTag);
-    const ulDivDivTag = new RegexHtmlElement('div', false);
-    ulDivDivTag.addChildElement(ulDivTag);
-    const h3Tag = new RegexHtmlElement('h3', false);
-    h3Tag.setContext('Assets');
-    const summaryTag = new RegexHtmlElement('summary', false);
-    summaryTag.addChildElement(h3Tag)
-    const detailsTag = new RegexHtmlElement('details', false);
-    detailsTag.addChildElement(summaryTag);
-    detailsTag.addChildElement(ulDivDivTag);
-    const detailsBoxTag = new RegexHtmlElement('div', false);
-    detailsBoxTag.addAttr('class', 'Box-footer');
-    detailsBoxTag.addChildElement(detailsTag);
-    const ulContentMatch = html.match(detailsBoxTag.toRegex());
-    if(ulContentMatch && ulContentMatch.groups && ulContentMatch.groups.ulContent){
-        const ulContentHtml = ulContentMatch.groups.ulContent;
-        const spanTag = new RegexHtmlElement('span', false);
-        spanTag.setContext('(?<name>[\\s\\S]*?)');
-        const aTag = new RegexHtmlElement('a', false);
-        aTag.addAttr('href', '(?<url>.*?)');
-        aTag.addChildElement(spanTag);
-        const liTag = new RegexHtmlElement('li', false);
-        liTag.addChildElement(aTag);
-        let matchGroups = ulContentHtml.matchAll(liTag.toRegex('g'));
-        for (let matchGroup of matchGroups) {
-            if(matchGroup.groups && matchGroup.groups.name && matchGroup.groups.url){
-                assetList.push({
-                    name: matchGroup.groups.name,
-                    url: GITHUB_HOST_URL + matchGroup.groups.url
-                })
-            }
+    const spanTag = new RegexHtmlElement('span', false);
+    spanTag.setContext('(?<name>[\\s\\S]*?)');
+    const aTag = new RegexHtmlElement('a', false);
+    aTag.addAttr('href', '(?<url>.*?)');
+    aTag.addChildElement(spanTag);
+    const liTag = new RegexHtmlElement('li', false);
+    liTag.addChildElement(aTag);
+    let matchGroups = html.matchAll(liTag.toRegex('g'));
+    for (let matchGroup of matchGroups) {
+        if(matchGroup.groups && matchGroup.groups.name && matchGroup.groups.url){
+            assetList.push({
+                name: matchGroup.groups.name,
+                url: GITHUB_HOST_URL + matchGroup.groups.url
+            })
         }
     }
     return assetList;

@@ -1,7 +1,7 @@
 import { Router } from 'itty-router';
 import { initDebug } from "./debug";
 import Res from "./response-util";
-import {handleMetaInfo, handleAssetsInfo, handleDownloadUrl} from "./github-page-util";
+import {handleMetaInfo, handleAssetsInfo} from "./github-page-util";
 // Create a new router
 const router = Router();
 
@@ -17,6 +17,7 @@ const errorHandler = (error, event) => {
 // github repository api
 const GITHUB_REPOSITORY_RELEASE_LATEST_URL = "https://github.com/${user}/${repo}/releases/latest";
 const GITHUB_REPOSITORY_RELEASE_TAG_URL = "https://github.com/${user}/${repo}/releases/tag/${tag}";
+const GITHUB_REPOSITORY_RELEASE_TAG_ASSERT_URL = "https://github.com/${user}/${repo}/releases/expanded_assets/${tag}";
 const HEADER = {
 	"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36",
 	"Accept": "*/*"
@@ -27,7 +28,6 @@ router.get("/github/:user/:repo/releases/latest", async ({ params, __debug_log }
 		.replace("${repo}", params.repo);
 	const html = await (await doFetch(url, __debug_log)).text();
 	const mateInfo = handleMetaInfo(html);
-	mateInfo.assets = handleAssetsInfo(html);
 	if(__debug_log && __debug_log.debugFlag) mateInfo.__debug_log = __debug_log.toString();
 	return Res.jsonSuccess(mateInfo);
 });
@@ -40,33 +40,21 @@ router.get("/github/:user/:repo/releases/tag/:tag", async ({ params, __debug_log
 
 	const html = await (await doFetch(url, __debug_log)).text();
 	const mateInfo = handleMetaInfo(html);
-	mateInfo.assets = handleAssetsInfo(html);
 	if(__debug_log && __debug_log.debugFlag) mateInfo.__debug_log = __debug_log.toString();
 	return Res.jsonSuccess(mateInfo);
 });
 
-const APPS_REPO = {
-	'bilibililivetv': GITHUB_REPOSITORY_RELEASE_LATEST_URL
-		.replace("${user}", 'MUedsa')
-		.replace("${repo}", 'BilibiliLiveTV')
-}
+router.get("/github/:user/:repo/releases/assets/:tag", async ({ params, __debug_log }) => {
+	const url = GITHUB_REPOSITORY_RELEASE_TAG_ASSERT_URL
+		.replace("${user}", params.user)
+		.replace("${repo}", params.repo)
+		.replace("${tag}", params.tag);
 
-router.get("/app/:name/download", async ({ params, __debug_log }) => {
-	let downloadUrl = null;
-	const githubTagPageUrl = APPS_REPO[params.name.toLowerCase()];
-	if(githubTagPageUrl){
-		const html = await (await doFetch(githubTagPageUrl, __debug_log)).text();
-		downloadUrl = handleDownloadUrl(html, 'app-release.apk');
-	}
-	let response;
-	if(downloadUrl){
-		response = Res.redirect(downloadUrl);
-	}else{
-		response = Res.BASE_404();
-	}
-	return response;
+	const html = await (await doFetch(url, __debug_log)).text();
+	const assertsInfo = handleAssetsInfo(html);
+	if(__debug_log && __debug_log.debugFlag) assertsInfo.__debug_log = __debug_log.toString();
+	return Res.jsonSuccess(assertsInfo);
 });
-
 
 async function doFetch(url, __debug_log) {
 	if(__debug_log) __debug_log.log('fetch url:', url);
