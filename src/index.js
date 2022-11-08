@@ -1,7 +1,8 @@
 import { Router } from 'itty-router';
 import { initDebug } from "./debug";
 import Res from "./response-util";
-import {handleMetaInfo, handleAssetsInfo} from "./github-page-util";
+import { parseMetaInfo, parseAssetsInfo } from "./github-page-util";
+import { parseVideoInfo, parsePlayInfo } from "./bilibili-page-util";
 // Create a new router
 const router = Router();
 
@@ -22,12 +23,15 @@ const HEADER = {
 	"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36",
 	"Accept": "*/*"
 }
+
+const BILIBILI_VIDEO_BV_URL = "https://www.bilibili.com/video/BV${bvSuffix}";
+
 router.get("/github/:user/:repo/releases/latest", async ({ params, __debug_log }) => {
 	const url = GITHUB_REPOSITORY_RELEASE_LATEST_URL
 		.replace("${user}", params.user)
 		.replace("${repo}", params.repo);
 	const html = await (await doFetch(url, __debug_log)).text();
-	const mateInfo = handleMetaInfo(html);
+	const mateInfo = parseMetaInfo(html);
 	if(__debug_log && __debug_log.debugFlag) mateInfo.__debug_log = __debug_log.toString();
 	return Res.jsonSuccess(mateInfo);
 });
@@ -39,7 +43,7 @@ router.get("/github/:user/:repo/releases/tag/:tag", async ({ params, __debug_log
 		.replace("${tag}", params.tag);
 
 	const html = await (await doFetch(url, __debug_log)).text();
-	const mateInfo = handleMetaInfo(html);
+	const mateInfo = parseMetaInfo(html);
 	if(__debug_log && __debug_log.debugFlag) mateInfo.__debug_log = __debug_log.toString();
 	return Res.jsonSuccess(mateInfo);
 });
@@ -51,9 +55,20 @@ router.get("/github/:user/:repo/releases/assets/:tag", async ({ params, __debug_
 		.replace("${tag}", params.tag);
 
 	const html = await (await doFetch(url, __debug_log)).text();
-	const assertsInfo = handleAssetsInfo(html);
+	const assertsInfo = parseAssetsInfo(html);
 	if(__debug_log && __debug_log.debugFlag) assertsInfo.__debug_log = __debug_log.toString();
 	return Res.jsonSuccess(assertsInfo);
+});
+
+router.get("/bilibili/BV:bvSuffix", async ({ params, __debug_log }) => {
+	const url = BILIBILI_VIDEO_BV_URL.replace("${bvSuffix}", params.bvSuffix);
+	const html = await (await doFetch(url, __debug_log)).text();
+	const videoInfo = parseVideoInfo(html);
+	const playInfo = parsePlayInfo(html);
+	return Res.jsonSuccess({
+		videoInfo: videoInfo,
+		playInfo: playInfo
+	});
 });
 
 async function doFetch(url, __debug_log) {

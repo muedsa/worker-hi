@@ -2,7 +2,7 @@ import RegexHtmlElement from './regex-html-element';
 
 const GITHUB_HOST_URL = "https://github.com";
 
-export const handleMetaInfo = (html) => {
+export const parseMetaInfo = (html) => {
     const metaTag = new RegexHtmlElement('meta', true);
     metaTag.addAttr('property', 'og:(?<name>.*?)');
     metaTag.addAttr('content', '(?<value>[\\s\\S]*?)');
@@ -28,7 +28,7 @@ export const handleMetaInfo = (html) => {
     return data;
 }
 
-export const handleAssetsInfo = (html) => {
+export const parseAssetsInfo = (html) => {
     let assetList = [];
     const spanTag = new RegexHtmlElement('span', false);
     spanTag.setContext('(?<name>[\\s\\S]*?)');
@@ -50,7 +50,7 @@ export const handleAssetsInfo = (html) => {
 }
 
 export const handleDownloadUrl = (html, fileName) => {
-    const assetList = handleAssetsInfo(html);
+    const assetList = parseAssetsInfo(html);
     let url = null;
     if(Array.isArray(assetList)){
         const find = assetList.find(asset => asset.name === fileName);
