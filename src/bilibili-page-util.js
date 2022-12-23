@@ -26,7 +26,7 @@ export const parsePlayInfo = (html) => {
 
 const HOME_PAGE_SCRIPT_CONTENT_REG = /<script type="text\/javascript">window\.__pinia=\(function.*?("BV\w+",\d+,.*?)\)\)<\/script>/;
 
-const HOME_PAGE_VIDEO_REG_EXP = /("(?<bv>BV\w+)",(?<cid>\d+),"(?<url>https?:\\u002F\\u002Fwww.bilibili.com\\u002Fvideo\\u002FBV\w+)","(?<coverUrl>https?:\\u002F\\u002F.*?)","(?<title>.*?)",\d+,(?<publishTime>\d+),\d+,"(?<author>.*?)","(?<authorFaceUrl>https?:\\u002F\\u002F.*?)",.*?)/g;
+const HOME_PAGE_VIDEO_REG_EXP = /("(?<bv>BV\w+)",(?<cid>\d+),"(?<url>https?:\\u002F\\u002Fwww.bilibili.com\\u002Fvideo\\u002FBV\w+)","(?<coverUrl>https?:\\u002F\\u002F.*?)","(?<title>.*?)",(?<duration>\d+),(?<publishTime>\d+),(?<authorMid>\d+),"(?<author>.*?)","(?<authorFaceUrl>https?:\\u002F\\u002F.*?)",(?<viewNum>\d+),(?<likeNum>\d+),(?<danmakuNum>\d+),.*?)/g;
 
 export const parseHomePageVideoList = (html) => {
   const matchStr = html.match(HOME_PAGE_SCRIPT_CONTENT_REG);
@@ -36,14 +36,21 @@ export const parseHomePageVideoList = (html) => {
     const matchGroups = content.matchAll(HOME_PAGE_VIDEO_REG_EXP);
     for (let matchGroup of matchGroups) {
       if(matchGroup.groups){
+        console.log('\n###\n');
+        console.log(matchGroup);
         list.push({
           bv: matchGroup.groups.bv,
           url: matchGroup.groups.url? matchGroup.groups.url.replaceAll('\\u002F', '\u002F') : '',
           title: matchGroup.groups.title,
           coverUrl: matchGroup.groups.coverUrl? matchGroup.groups.coverUrl.replaceAll('\\u002F', '\u002F') : '',
-          publishTime: matchGroup.groups.publishTime? parseInt(matchGroup.groups.publishTime) : 0,
-          author: matchGroup.groups. author,
+          duration: matchGroup.groups.duration? parseInt(matchGroup.groups.duration) : -1,
+          publishTime: matchGroup.groups.publishTime? parseInt(matchGroup.groups.publishTime) : -1,
+          authorMid: matchGroup.groups.authorMid? parseInt(matchGroup.groups.authorMid) : -1,
+          author: matchGroup.groups.author,
           authorFaceUrl: matchGroup.groups.authorFaceUrl? matchGroup.groups.authorFaceUrl.replaceAll('\\u002F', '\u002F') : '',
+          viewNum: matchGroup.groups.viewNum? parseInt(matchGroup.groups.viewNum) : -1,
+          likeNum: matchGroup.groups.likeNum? parseInt(matchGroup.groups.likeNum) : -1,
+          danmakuNum: matchGroup.groups.danmakuNum? parseInt(matchGroup.groups.danmakuNum) : -1,
         });
       }
     }
