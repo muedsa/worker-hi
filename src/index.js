@@ -2,7 +2,7 @@ import { Router } from 'itty-router';
 import { initDebug } from "./debug";
 import Res from "./response-util";
 import { parseMetaInfo, parseAssetsInfo } from "./github-page-util";
-import { parseVideoInfo, parsePlayInfo } from "./bilibili-page-util";
+import {parseVideoInfo, parsePlayInfo, parseHomePageVideoList} from "./bilibili-page-util";
 // Create a new router
 const router = Router();
 
@@ -25,6 +25,7 @@ const HEADER = {
 }
 
 const BILIBILI_VIDEO_BV_URL = "https://www.bilibili.com/video/BV${bvSuffix}";
+const BILIBILI_URL = "https://www.bilibili.com";
 
 router.get("/github/:user/:repo/releases/latest", async ({ params, __debug_log }) => {
 	const url = GITHUB_REPOSITORY_RELEASE_LATEST_URL
@@ -69,6 +70,12 @@ router.get("/bilibili/BV:bvSuffix", async ({ params, __debug_log }) => {
 		videoInfo: videoInfo,
 		playInfo: playInfo
 	});
+});
+
+router.get("/bilibili/home", async ({ __debug_log }) => {
+	const html = await (await doFetch(BILIBILI_URL, __debug_log)).text();
+	const videoList = parseHomePageVideoList(html);
+	return Res.jsonSuccess(videoList);
 });
 
 async function doFetch(url, __debug_log) {
