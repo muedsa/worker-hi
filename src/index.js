@@ -1,8 +1,9 @@
 import { Router } from 'itty-router';
 import { initDebug } from "./debug";
 import Res from "./response-util";
-import { parseMetaInfo, parseAssetsInfo } from "./github-page-util";
-import {parseVideoInfo, parsePlayInfo, parseHomePageVideoList} from "./bilibili-page-util";
+import { parseMetaInfo, parseAssetsInfo } from './github-page-util';
+import {parseVideoInfo, parsePlayInfo, parseHomePageVideoList} from './bilibili-page-util';
+import { buildMPD } from './bilibili-dash-util';
 // Create a new router
 const router = Router();
 
@@ -12,6 +13,7 @@ const errorHandler = (error, event) => {
 	if(event.__debug_log && event.__debug_log.debugFlag) {
 		others.debug = event.__debug_log.toString();
 	}
+	console.error(error);
 	return Res.jsonError(error.status || 500, error.message || 'Server Error', others);
 };
 
@@ -76,6 +78,21 @@ router.get("/bilibili/home", async ({ __debug_log }) => {
 	const html = await (await doFetch(BILIBILI_URL, __debug_log)).text();
 	const videoList = parseHomePageVideoList(html);
 	return Res.jsonSuccess(videoList);
+});
+
+router.get("/bilibili/dash/BV:bvSuffix.mbp", async ({ params, query, __debug_log }) => {
+	const url = BILIBILI_VIDEO_BV_URL.replace("${bvSuffix}", params.bvSuffix);
+	const html = await (await doFetch(url, __debug_log)).text();
+	const playInfo = parsePlayInfo(html);
+	return Res.text(buildMPD(playInfo.data.dash.video, playInfo.data.dash.audio, query.filter));
+});
+
+router.post("/bilibili/dash/build", async request  => {
+	const {dash, filter} = await request.json();
+	if(!dash || !Array.isArray(dash.video) || !Array.isArray(dash.audio)){
+		return Res.jsonError(100003, '参数错误');
+	}
+	return Res.text(buildMPD(dash.video, dash.audio, filter));
 });
 
 async function doFetch(url, __debug_log) {
