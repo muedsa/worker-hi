@@ -33,7 +33,7 @@ router.get("/github/:user/:repo/releases/latest", async ({ params, __debug_log }
 	const url = GITHUB_REPOSITORY_RELEASE_LATEST_URL
 		.replace("${user}", params.user)
 		.replace("${repo}", params.repo);
-	const html = await (await doFetch(url, __debug_log)).text();
+	const html = await (await doFetch(url, {}, __debug_log)).text();
 	const mateInfo = parseMetaInfo(html);
 	if(__debug_log && __debug_log.debugFlag) mateInfo.__debug_log = __debug_log.toString();
 	return Res.jsonSuccess(mateInfo);
@@ -45,7 +45,7 @@ router.get("/github/:user/:repo/releases/tag/:tag", async ({ params, __debug_log
 		.replace("${repo}", params.repo)
 		.replace("${tag}", params.tag);
 
-	const html = await (await doFetch(url, __debug_log)).text();
+	const html = await (await doFetch(url, {}, __debug_log)).text();
 	const mateInfo = parseMetaInfo(html);
 	if(__debug_log && __debug_log.debugFlag) mateInfo.__debug_log = __debug_log.toString();
 	return Res.jsonSuccess(mateInfo);
@@ -57,15 +57,15 @@ router.get("/github/:user/:repo/releases/assets/:tag", async ({ params, __debug_
 		.replace("${repo}", params.repo)
 		.replace("${tag}", params.tag);
 
-	const html = await (await doFetch(url, __debug_log)).text();
+	const html = await (await doFetch(url , {}, __debug_log)).text();
 	const assertsInfo = parseAssetsInfo(html);
 	if(__debug_log && __debug_log.debugFlag) assertsInfo.__debug_log = __debug_log.toString();
 	return Res.jsonSuccess(assertsInfo);
 });
 
-router.get("/bilibili/BV:bvSuffix", async ({ params, __debug_log }) => {
+router.get("/bilibili/BV:bvSuffix", async ({ params, headers, __debug_log }) => {
 	const url = BILIBILI_VIDEO_BV_URL.replace("${bvSuffix}", params.bvSuffix);
-	const html = await (await doFetch(url, __debug_log)).text();
+	const html = await (await doFetch(url, { 'cookie': headers.get('cookie')}, __debug_log)).text();
 	const videoInfo = parseVideoInfo(html);
 	const playInfo = parsePlayInfo(html);
 	return Res.jsonSuccess({
@@ -74,15 +74,15 @@ router.get("/bilibili/BV:bvSuffix", async ({ params, __debug_log }) => {
 	});
 });
 
-router.get("/bilibili/home", async ({ __debug_log }) => {
-	const html = await (await doFetch(BILIBILI_URL, __debug_log)).text();
+router.get("/bilibili/home", async ({ headers, __debug_log  }) => {
+	const html = await (await doFetch(BILIBILI_URL, { 'cookie': headers.get('cookie')}, __debug_log)).text();
 	const videoList = parseHomePageVideoList(html);
 	return Res.jsonSuccess(videoList);
 });
 
-router.get("/bilibili/dash/BV:bvSuffix.mbp", async ({ params, query, __debug_log }) => {
+router.get("/bilibili/dash/BV:bvSuffix.mbp", async ({ params, query, headers, __debug_log }) => {
 	const url = BILIBILI_VIDEO_BV_URL.replace("${bvSuffix}", params.bvSuffix);
-	const html = await (await doFetch(url, __debug_log)).text();
+	const html = await (await doFetch(url, { 'cookie': headers.get('cookie')}, __debug_log)).text();
 	const playInfo = parsePlayInfo(html);
 	return Res.text(buildMPD(playInfo.data.dash.video, playInfo.data.dash.audio, query.filter));
 });
@@ -95,11 +95,13 @@ router.post("/bilibili/dash/build", async request  => {
 	return Res.text(buildMPD(dash.video, dash.audio, filter));
 });
 
-async function doFetch(url, __debug_log) {
+async function doFetch(url, headers = {}, __debug_log) {
+	headers = Object.assign({...HEADER}, headers)
 	if(__debug_log) __debug_log.log('fetch url:', url);
+	if(__debug_log) __debug_log.log('headers:', headers);
 	const response = await fetch(url, {
 		method: 'GET',
-		headers: HEADER,
+		headers: headers,
 	});
 	if(__debug_log) __debug_log.log('response:', await response.clone().text());
 	if(response.status !== 200){
