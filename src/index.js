@@ -4,6 +4,7 @@ import Res from "./response-util";
 import { parseMetaInfo, parseAssetsInfo } from './github-page-util';
 import {parseVideoInfo, parsePlayInfo, parseHomePageVideoList} from './bilibili-page-util';
 import { buildMPD } from './bilibili-dash-util';
+import LZString from 'lz-string'
 // Create a new router
 const router = Router();
 
@@ -93,6 +94,19 @@ router.post("/bilibili/dash/build", async request  => {
 		return Res.jsonError(100003, '参数错误');
 	}
 	return Res.text(buildMPD(dash.video, dash.audio, filter));
+});
+
+router.get("/bilibili/dash/buildMbp", async request => {
+	const {cd, d, f} =  request.query;
+	if(!d && !cd){
+		return Res.jsonError(100003, '参数错误');
+	}
+	const jsonStr = d? decodeURIComponent(d) : LZString.decompressFromEncodedURIComponent(cd);
+	const dash = JSON.parse(jsonStr);
+	if(!dash || !Array.isArray(dash.video) || !Array.isArray(dash.audio)){
+		return Res.jsonError(100003, '参数错误');
+	}
+	return Res.text(buildMPD(dash.video, dash.audio, f));
 });
 
 async function doFetch(url, headers = {}, __debug_log) {

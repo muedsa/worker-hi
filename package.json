@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "itty-router": "^2.6.1",
+    "lz-string": "^1.4.4",
     "uuid": "^9.0.0"
   }
 }
