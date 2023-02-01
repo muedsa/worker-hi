@@ -38,7 +38,7 @@ export const parseHomePageVideoList = (html) => {
       if(matchGroup.groups){
         list.push({
           bv: matchGroup.groups.bv,
-          cid: matchGroup.groups.cid,
+          cid: matchGroup.groups.cid? parseInt(matchGroup.groups.cid) : -1,
           url: matchGroup.groups.url? matchGroup.groups.url.replaceAll('\\u002F', '\u002F') : '',
           title: matchGroup.groups.title? matchGroup.groups.title.replaceAll('\\u002F', '\u002F') : '',
           coverUrl: matchGroup.groups.coverUrl? matchGroup.groups.coverUrl.replaceAll('\\u002F', '\u002F') : '',
