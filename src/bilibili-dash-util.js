@@ -1,4 +1,6 @@
-export const buildMPD = (videoList, audioList, filter) => {
+export const buildMPD = (dash, filter) => {
+  let videoList = dash.video;
+  let audioList = dash.audio;
   let videoRepresentationArr = [];
   if(filter){
     videoList = videoList.filter(video => video.codecs.includes(filter));
@@ -27,8 +29,8 @@ export const buildMPD = (videoList, audioList, filter) => {
 		xmlns="urn:mpeg:dash:schema:mpd:2011"
 		xsi:schemaLocation="urn:mpeg:dash:schema:mpd:2011 DASH-MPD.xsd"
 		type="static"
-		mediaPresentationDuration="PT654S"
-		minBufferTime="PT4S"
+		mediaPresentationDuration="PT` + dash.duration + `S"
+		minBufferTime="PT` + dash.minBufferTime + `S"
 		profiles="http://dashif.org/guidelines/dash264,urn:mpeg:dash:profile:isoff-on-demand:2011">
     <Period>
     		<AdaptationSet mimeType="video/mp4" contentType="video" subsegmentAlignment="true" subsegmentStartsWithSAP="1">

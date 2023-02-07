@@ -85,7 +85,7 @@ router.get("/bilibili/dash/BV:bvSuffix.mbp", async ({ params, query, headers, __
 	const url = BILIBILI_VIDEO_BV_URL.replace("${bvSuffix}", params.bvSuffix);
 	const html = await (await doFetch(url, { 'cookie': headers.get('cookie')}, __debug_log)).text();
 	const playInfo = parsePlayInfo(html);
-	return Res.text(buildMPD(playInfo.data.dash.video, playInfo.data.dash.audio, query.filter));
+	return Res.text(buildMPD(playInfo.data.dash, query.filter));
 });
 
 router.post("/bilibili/dash/build", async request  => {
@@ -93,7 +93,7 @@ router.post("/bilibili/dash/build", async request  => {
 	if(!dash || !Array.isArray(dash.video) || !Array.isArray(dash.audio)){
 		return Res.jsonError(100003, '参数错误');
 	}
-	return Res.text(buildMPD(dash.video, dash.audio, filter));
+	return Res.text(buildMPD(dash, filter));
 });
 
 router.get("/bilibili/dash/buildMbp", async request => {
@@ -106,7 +106,7 @@ router.get("/bilibili/dash/buildMbp", async request => {
 	if(!dash || !Array.isArray(dash.video) || !Array.isArray(dash.audio)){
 		return Res.jsonError(100003, '参数错误');
 	}
-	return Res.text(buildMPD(dash.video, dash.audio, f));
+	return Res.text(buildMPD(dash, f));
 });
 
 async function doFetch(url, headers = {}, __debug_log) {
