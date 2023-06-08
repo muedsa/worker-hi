@@ -2,7 +2,7 @@ import { Router } from 'itty-router';
 import { initDebug } from "./debug";
 import Res from "./response-util";
 import { parseMetaInfo, parseAssetsInfo } from './github-page-util';
-import {parseVideoInfo, parsePlayInfo, parseHomePageVideoList} from './bilibili-page-util';
+import { parseVideoInfo, parsePlayInfo } from './bilibili-page-util';
 import { buildMPD } from './bilibili-dash-util';
 import LZString from 'lz-string'
 // Create a new router
@@ -75,12 +75,6 @@ router.get("/bilibili/BV:bvSuffix", async ({ params, headers, __debug_log }) => 
 	});
 });
 
-router.get("/bilibili/home", async ({ headers, __debug_log  }) => {
-	const html = await (await doFetch(BILIBILI_URL, { 'cookie': headers.get('cookie')}, __debug_log)).text();
-	const videoList = parseHomePageVideoList(html);
-	return Res.jsonSuccess(videoList);
-});
-
 router.get("/bilibili/dash/BV:bvSuffix.mbp", async ({ params, query, headers, __debug_log }) => {
 	const url = BILIBILI_VIDEO_BV_URL.replace("${bvSuffix}", params.bvSuffix);
 	const html = await (await doFetch(url, { 'cookie': headers.get('cookie')}, __debug_log)).text();
@@ -107,6 +101,34 @@ router.get("/bilibili/dash/buildMbp", async request => {
 		return Res.jsonError(100003, '参数错误');
 	}
 	return Res.text(buildMPD(dash, f));
+});
+
+const BILIBILI_DM_VIEW_URL = "https://api.bilibili.com/x/v2/dm/web/view";
+
+router.get("/bilibili/dm/view", async request => {
+	const headers = new Headers(request.headers);
+  headers.set('referer', BILIBILI_URL);
+  const url = new URL(BILIBILI_DM_SEG_URL);
+  console.log(request.query);
+  const keys = Object.keys(request.query);
+  keys.forEach(key =>{
+    url.searchParams.set(key, request.query[key]);
+  });
+  return doFetch(url.toString(), headers, request.__debug_log);
+});
+
+const BILIBILI_DM_SEG_URL = "https://api.bilibili.com/x/v2/dm/web/seg.so";
+
+router.get("/bilibili/dm/seg.so", async request => {
+	const headers = new Headers(request.headers);
+  headers.set('referer', BILIBILI_URL);
+  const url = new URL(BILIBILI_DM_SEG_URL);
+  console.log(request.query);
+  const keys = Object.keys(request.query);
+  keys.forEach(key =>{
+    url.searchParams.set(key, request.query[key]);
+  });
+  return doFetch(url.toString(), headers, request.__debug_log);
 });
 
 async function doFetch(url, headers = {}, __debug_log) {
